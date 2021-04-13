@@ -11,14 +11,6 @@ C_SRCS += \
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 ../Middlewares/Third_Party/FreeRTOS/Source/timers.c 
 
-OBJS += \
-./Middlewares/Third_Party/FreeRTOS/Source/croutine.o \
-./Middlewares/Third_Party/FreeRTOS/Source/event_groups.o \
-./Middlewares/Third_Party/FreeRTOS/Source/list.o \
-./Middlewares/Third_Party/FreeRTOS/Source/queue.o \
-./Middlewares/Third_Party/FreeRTOS/Source/tasks.o \
-./Middlewares/Third_Party/FreeRTOS/Source/timers.o 
-
 C_DEPS += \
 ./Middlewares/Third_Party/FreeRTOS/Source/croutine.d \
 ./Middlewares/Third_Party/FreeRTOS/Source/event_groups.d \
@@ -26,6 +18,14 @@ C_DEPS += \
 ./Middlewares/Third_Party/FreeRTOS/Source/queue.d \
 ./Middlewares/Third_Party/FreeRTOS/Source/tasks.d \
 ./Middlewares/Third_Party/FreeRTOS/Source/timers.d 
+
+OBJS += \
+./Middlewares/Third_Party/FreeRTOS/Source/croutine.o \
+./Middlewares/Third_Party/FreeRTOS/Source/event_groups.o \
+./Middlewares/Third_Party/FreeRTOS/Source/list.o \
+./Middlewares/Third_Party/FreeRTOS/Source/queue.o \
+./Middlewares/Third_Party/FreeRTOS/Source/tasks.o \
+./Middlewares/Third_Party/FreeRTOS/Source/timers.o 
 
 
 # Each subdirectory must supply rules for building sources it contributes

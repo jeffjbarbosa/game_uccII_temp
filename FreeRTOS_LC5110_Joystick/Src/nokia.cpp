@@ -1,10 +1,10 @@
-#include "NOKIA5110_fb.h"
+#include "nokia.h"
 
 /*****************************************************************************
 	C�digo desenvolvido para ser empregado com um RTOS
 
 	Qualquer altera��o ser� sempre feita no frame buffer,
-	sendo o frame buffer impresso periodicamento em uma tarefa.		
+	sendo o frame buffer impresso periodicamento em uma tarefa.
 
 ******************************************************************************/
 
@@ -123,10 +123,10 @@ static uint32_t indice_fb;			// indice para uso no fb
 /*	There are two memory banks in the LCD, data/RAM and commands. This
 	function sets the DC pin high or low depending, and then sends the data byte */
 //----------------------------------------------------------------------------------------------
-void cmd_LCD(uint32_t data) 
+void cmd_LCD(uint32_t data)
 {
 	uint32_t i=8;
-	
+
 	CLR_DC();					// comando para o LCD
 
 	//Send the data
@@ -138,16 +138,16 @@ void cmd_LCD(uint32_t data)
 		else
 			CLR_DIN();
 		PULSO_CLK();
-		
+
 	}while(i!=0);
-	
+
 	SET_CE();
 }
 //----------------------------------------------------------------------------------------------
 void data_LCD(uint32_t data)
 {
 	uint32_t i=8;
-	
+
 	SET_DC();					// dado para o LCD
 
 	//Send the data
@@ -159,14 +159,14 @@ void data_LCD(uint32_t data)
 		else
 			CLR_DIN();
 		PULSO_CLK();
-		
+
 	}while(i!=0);
-	
+
 	SET_CE();
 }
-//----------------------------------------------------------------------------------------------- 
-void inic_LCD() 
-{	
+//-----------------------------------------------------------------------------------------------
+void inic_LCD()
+{
 	// Reset the LCD to a known state
 	CLR_RST();
 	atraso_us(10);
@@ -180,39 +180,39 @@ void inic_LCD()
 	cmd_LCD(0x20);			//We must send 0x20 before modifying the display control mode
 	cmd_LCD(0x0C);			//Set display control, normal mode. 0x0D for inverse
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 void goto_XY(uint32_t x, uint32_t y)  // 0<=x<=83  0<=y<=5
 {
 	if(y>5)	y=5;
 	if(x>84)	x=83;
-  
+
 	indice_fb =  x + (84*y);		// indice para ser empregado no fb
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 void escreve2fb(unsigned char imagem[])				// altera o frame buffer, uso para c�pia de figura
 {
 	uint32_t i;
-	
+
 	for(i=0; i<504; i++)
 		fb[i]= imagem[i];
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 void imprime_LCD()		// desenha em todo o LCD
 {
 	uint32_t i;
-	
+
 	for (i=0 ; i < 504 ; i++)
 		data_LCD(fb[i]);
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 /* This function takes in a character, looks it up in the font table/array and writes it to the screen
- * each character is 8 bits tall and 5 bits wide. We pad one blank column of pixels on each side of 
- * the character for readability.																	
+ * each character is 8 bits tall and 5 bits wide. We pad one blank column of pixels on each side of
+ * the character for readability.
  * Os caracteres s� podem ser escritos na linha correspondente ao banco	(0-5)							*/
-void caractere_LCD(char character) 
+void caractere_LCD(char character)
 {
 	uint32_t i;
-	
+
 	fb[indice_fb] = 0x00;		//Blank vertical line padding
 	indice_fb++;
 
@@ -221,16 +221,16 @@ void caractere_LCD(char character)
 		fb[indice_fb] = ASCII[character - 0x20][i];//0x20 is the ASCII character for Space (' '). The font table starts with this character
 		indice_fb++;
 	}
-	
+
 	fb[indice_fb] = 0x00; //Blank vertical line padding
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 void string_LCD(char *msg)
 {
 	while(*msg)
 		caractere_LCD(*msg++);
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 void string_LCD_Nr(char * msg, uint32_t valor,			// escreve uma mensagem com um n�mero
 								uint32_t quant2Print)	// quant2Print � o n�mero de digitos para serem impressos
 {
@@ -241,15 +241,15 @@ void string_LCD_Nr(char * msg, uint32_t valor,			// escreve uma mensagem com um 
 		digitos[i]= ' ';
 
 	string_LCD(msg);
-	
+
 	do
 	{
 		digitos[n] = ((valor%10) + 48);	//pega o resto da divisao por 10
 		valor /=10;						//pega o inteiro da divis�o por 10
 		n++;
-		
+
 	}while (valor!=0);
-	
+
 	if(quant2Print != 0)
 	{
 		n = quant2Print;
@@ -261,34 +261,34 @@ void string_LCD_Nr(char * msg, uint32_t valor,			// escreve uma mensagem com um 
 	}
 
 }
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
 //Clears the LCD by writing zeros to the entire screen
-void limpa_LCD() 
+void limpa_LCD()
 {
 	uint32_t i;
-	
+
 	for ( i= 0 ; i < 504 ; i++)
 		fb[i] = 0x00;
 }
-//----------------------------------------------------------------------------------------------- 
-// Desenha pixel 
-//----------------------------------------------------------------------------------------------- 
+//-----------------------------------------------------------------------------------------------
+// Desenha pixel
+//-----------------------------------------------------------------------------------------------
 void desenha_pixel(uint32_t x,				/* ponto horizontal para o pixel: 0 -> 83 (esq -> dir)	*/
 				   uint32_t y,				/* ponto vertical para o pixel: 0 -> 47 (cima -> baixo)	*/
 				   uint32_t propr)			/* 0 =  apaga pixel, 1 = liga pixel				*/
 {
 	uint32_t i;
-	
+
 	if(x>83)	x=83;
 	if(y>47)	y=47;
-	
+
 	i = x + (84*(y/8));		/* determina��o do indice do byte a ser alterado [0 - 503]	*/
-	
+
 	if(propr==0)
 		clr_bit(fb[i],y%8);
 	else
 		set_bit(fb[i],y%8);
-	
+
 }
 //-----------------------------------------------------------------------------------------------
 // Desenha linha - ALGORITMO DE BRESENHAM - (http://www.etechplanet.com/codesnippets/computer-graphics-draw-a-line-using-bresenham-algorithm.aspx)
@@ -303,14 +303,14 @@ void desenha_linha(struct  pontos_t *p,		/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2=y2,
 	y1 = p->y1;
 	x2 = p->x2;
 	y2 = p->y2;
-	
+
 	dx = x2-x1;
 	dy = y2-y1;
 	dx1 = abs(dx);
 	dy1 = abs(dy);
 	px = 2*dy1 - dx1;
 	py = 2*dx1 - dy1;
-		
+
 	if(dy1 <= dx1)
 	{	if(dx >= 0)
 		{	x = x1;
@@ -373,25 +373,25 @@ void desenha_linha(struct  pontos_t *p,		/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2=y2,
 // Desenha Circulo - Algoritmo de Ponto M�dio http://rosettacode.org/wiki/Bitmap/Midpoint_circle_algorithm#C
 //--------------------------------------------------------------------------------------------------------------
 void desenha_circulo(int32_t x0, int32_t y0,int32_t radius,	// valores int se fazem necess�rio devido as compara��es
-											 uint32_t prop) // 0 =  paga pixel, 1 = liga pixel				
+											 uint32_t prop) // 0 =  paga pixel, 1 = liga pixel
 {
 	  int f, ddF_x, ddF_y, x, y;
-	  
+
 	  if(x0>83)	x0=83;
 	  if(y0>47) y0=47;
-	  
+
 	  f = 1 - radius;
 	  ddF_x = 0;
 	  ddF_y = -2 * radius;
 	  x = 0;
 	  y = radius;
-	  
+
 	  // evita a impress�o fora do dom�nio de x e y (erros de impress�o)
 	  if((y0 + radius) < 48)		desenha_pixel(x0, y0 + radius,prop);
 	  if((y0 - radius) >= 0)		desenha_pixel(x0, y0 - radius,prop);
-	  if((x0 + radius) < 84)		desenha_pixel(x0 + radius, y0,prop);	  
+	  if((x0 + radius) < 84)		desenha_pixel(x0 + radius, y0,prop);
 	  if((x0 - radius) >= 0)		desenha_pixel(x0 - radius, y0,prop);
-	  
+
 	  while(x < y)
 	  {
 		  if(f >= 0)
@@ -403,7 +403,7 @@ void desenha_circulo(int32_t x0, int32_t y0,int32_t radius,	// valores int se fa
 		  x++;
 		  ddF_x += 2;
 		  f += ddF_x + 1;
-		  
+
 		  // evita a impress�o fora do dom�nio de x e y (erros de impress�o)
 		  if(((x0+x) <84) && ((y0+y) < 48))		desenha_pixel(x0 + x, y0 + y,1);
 		  if(((x0-x) >=0) && ((y0+y) < 48))		desenha_pixel(x0 - x, y0 + y,1);
@@ -420,7 +420,7 @@ void desenha_circulo(int32_t x0, int32_t y0,int32_t radius,	// valores int se fa
 *
 *		p1-----------
 *		|			|
-*		|	
+*		|
 *		------------p2
 */
 void desenha_retangulo(struct  pontos_t *p,	uint32_t prop)	/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2=y2, passagem dos pontos por struct	*/
@@ -429,19 +429,19 @@ void desenha_retangulo(struct  pontos_t *p,	uint32_t prop)	/*  p.x1=x1, p.y1=y1,
 															/* 2 = preenchimento pixel apagado, 3 = preenchimento pixel ligado		*/
 {	struct pontos_t pr;
 	uint32_t pxl, i;
-			
+
 	if(prop < 2)								// desenho com quatro linhas
 	{
 		pr.x1 = p->x1; pr.y1 = p->y1;
 		pr.x2 = p->x1; pr.y2 = p->y2;
 		desenha_linha(&pr,prop);
-		
+
 		pr.x2 = p->x2; pr.y2 = p->y1;
 		desenha_linha(&pr,prop);
-		
+
 		pr.x1 = p->x2; pr.y1 = p->y2;
 		desenha_linha(&pr,prop);
-		
+
 		pr.x2 = p->x1; pr.y2 = p->y2;
 		desenha_linha(&pr,prop);
 	}
@@ -451,10 +451,10 @@ void desenha_retangulo(struct  pontos_t *p,	uint32_t prop)	/*  p.x1=x1, p.y1=y1,
 			pxl = 0;
 		else
 			pxl = 1;
-		
+
 		pr.y1 = p->y1;
 		pr.y2 = p->y2;
-		
+
 		for(i = p->x1; i <= p->x2; i++)			// desenha as linhas verticalmente
 		{
 			pr.x1 = i;
@@ -463,11 +463,11 @@ void desenha_retangulo(struct  pontos_t *p,	uint32_t prop)	/*  p.x1=x1, p.y1=y1,
 		}
 	}
 }
-//--------------------------------------------------------------------------------------------------------------	
+//--------------------------------------------------------------------------------------------------------------
 /*	Funcao para desenho de um tri�ngulo - N�o tem preenchimento
 *
 *			  p2
-*			/	\		
+*			/	\
 *		  /		 \
 *		p1--------p3
 */
@@ -475,17 +475,17 @@ void desenha_triangulo(struct  pontos_t *p,		/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2
 												/*  ponto superior esquerdo e ponto inferior direito					*/
 								uint32_t prop)	/* 0 =  apaga pixel, 1 = liga pixel,									*/
 {	struct pontos_t pt;
-	
+
 	pt.x1 = p->x1; pt.y1 = p->y1;
 	pt.x2 = p->x2; pt.y2 = p->y2;
 	desenha_linha(&pt,prop);
-	
+
 	pt.x2 = p->x3; pt.y2 = p->y3;
 	desenha_linha(&pt,prop);
-	
+
 	pt.x1 = p->x2; pt.y1 = p->y2;
-	desenha_linha(&pt,prop);	
-	
+	desenha_linha(&pt,prop);
+
 }
 //--------------------------------------------------------------------------------------------------------------
 /* FUN��O PARA DESENHO DE UMA FIGURA em qualquer ponto da tela e algumas partes da figura
@@ -498,7 +498,7 @@ void desenha_triangulo(struct  pontos_t *p,		/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2
 *	  ----------------
 *
 *	Redefinindo o tamanho da figura (menor) - [ p.x2 != 0 e p.y2 !=0] - canto superior esquerdo
-*		
+*
 *     ___p.x2___
 *	 P1 --------------
 *    |xxxxxxxxxx|	  |    | p.y2
@@ -512,7 +512,7 @@ void desenha_triangulo(struct  pontos_t *p,		/*  p.x1=x1, p.y1=y1, p.x2=x2, p.y2
 *	  P1---------------
 *	  |   _____________|
 *	  |	 |xxxxxxxxxxxxx|    | p.y3
-*      ---------------- 
+*      ----------------
 *
 
 *		figura[nr_linhas][nr colunas], onde cada elemento � composto por 1 byte de informa��o
@@ -526,19 +526,19 @@ void desenha_fig(struct  pontos_t *p,		// [p.x1 p.y1] para o ponto P1 de incersa
 				const struct figura_t *f)	// ponteiro para a figura definido pelo tipo figura_t
 {
 	uint32_t x, y, larg, alt, i, j, ajx, ajy;
-	
+
 	x = p->x1;
 	y = p->y1;
-	
+
 	// corrige limites para P1
 	if(x > 83)  x = 83;
 	if(y > 47)  y = 47;
-	
+
 	larg = f->largura;
 	alt = f->altura;
-	
+
 	// caso se deseje outra dimensao de impressao da figura que n�o a definida por padrao
-	if((p->x2!=0) && (p->y2!=0)) 
+	if((p->x2!=0) && (p->y2!=0))
 	{
 		larg = p->x2;
 		alt = p->y2;
@@ -552,20 +552,20 @@ void desenha_fig(struct  pontos_t *p,		// [p.x1 p.y1] para o ponto P1 de incersa
 	if(larg > f->largura)
 		larg = f->largura;
 	if(alt > f->altura)
-		alt = f->altura;		
-		
+		alt = f->altura;
+
 	//corrigir dimensoes da figura para dentro da �rea de impressao
 	if((x+larg)>84)
 		larg = 84 - x;
 	if((y+alt)>48)
 		alt = 48 - y;
-	
+
 	//------------------------------------------------------------------------------------------
 	if((p->x3!=0) && (p->y3!=0))
 	{
 		ajx = f->largura - larg;
 		ajy = f->altura - alt;
-		
+
 		for(j=0; j<alt; j++)
 		{
 			for(i=0; i<larg; i++) // canto inferior direito
@@ -584,7 +584,7 @@ void desenha_fig(struct  pontos_t *p,		// [p.x1 p.y1] para o ponto P1 de incersa
 			}
 		}
 	}
-	//------------------------------------------------------------------------------------------	
+	//------------------------------------------------------------------------------------------
 }
 //----------------------------------------------------------------------------------------------
 void escreve_Nr_Peq(uint32_t x, uint32_t y, int32_t valor, uint32_t quant2Print) // quant2Print = 0, imprime todos os digitos
@@ -594,7 +594,7 @@ void escreve_Nr_Peq(uint32_t x, uint32_t y, int32_t valor, uint32_t quant2Print)
 
 	for(i=0; i<11; i++)
 		digitos[i] = ' ';
-		
+
 	if(valor<0)
 	{
 		neg=1;
@@ -606,19 +606,19 @@ void escreve_Nr_Peq(uint32_t x, uint32_t y, int32_t valor, uint32_t quant2Print)
 		digitos[n] = valor%10;	//pega o resto da divisao por 10
 		valor /=10;						//pega o inteiro da divis�o por 10
 		n++;
-		
+
 	}while (valor!=0);
-	
+
 	if(neg!=0)
 	{
 		digitos[n] = '-';	// sinal de menos
 		n++;
-		
+
 	}
-	
+
 	if(quant2Print != 0)
 		n = quant2Print;
-	
+
 	do
 	{
 		for(i=0; i<4; i++)		// largura
@@ -632,7 +632,7 @@ void escreve_Nr_Peq(uint32_t x, uint32_t y, int32_t valor, uint32_t quant2Print)
 				else
 					desenha_pixel((x+i) + (4*px) , y + j,  0);
 			}
-		} 
+		}
 		px++;
 		n--;
 	} while (n!=0);

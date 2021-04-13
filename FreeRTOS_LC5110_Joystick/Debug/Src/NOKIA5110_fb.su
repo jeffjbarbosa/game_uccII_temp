@@ -15,6 +15,6 @@ NOKIA5110_fb.c:426:6:desenha_retangulo	40	static
 NOKIA5110_fb.c:474:6:desenha_triangulo	40	static
 NOKIA5110_fb.c:521:6:desenha_fig	48	static
 NOKIA5110_fb.c:590:6:escreve_Nr_Peq	64	static
-NOKIA5110_fb.c:643:6:print_food	0	static
-NOKIA5110_fb.c:649:6:print_AI	32	static
-NOKIA5110_fb.c:659:6:print_monster	32	static
+NOKIA5110_fb.c:644:6:print_food	0	static
+NOKIA5110_fb.c:651:6:print_AI	32	static
+NOKIA5110_fb.c:663:6:print_monster	56	static
